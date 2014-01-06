@@ -1,4 +1,5 @@
-"""
+"
+"
 Shared settings
 """
 
@@ -172,7 +173,7 @@ PICKLE_PORT = 2024
 # This is the port that listens for Messagepack-encoded UDP packets.
 UDP_PORT = 2025
 
-UDP_PORT = 9999
+ISTATD_PORT = 9999
 
 # This is how big a 'chunk' of metrics will be before they are added onto
 # the shared queue for processing into Redis. If you are noticing that Horizon
@@ -226,7 +227,7 @@ Webapp settings
 """
 
 # The IP address for the webapp
-WEBAPP_IP = '127.0.0.1'
+WEBAPP_IP = '0.0.0.0'
 
 # The port for the webapp
 WEBAPP_PORT = 1500
