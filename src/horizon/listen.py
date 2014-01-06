@@ -191,7 +191,7 @@ class Listen(Process):
             self.listen_pickle()
         elif self.type == 'udp':
             self.listen_udp()
-        elif self.istatd == 'istatd':
+        elif self.type == 'istatd':
             self.listen_istatd()
         else:
             logging.error('unknown listener format')
