@@ -142,6 +142,45 @@ class Listen(Process):
                 logger.info('can\'t connect to socket: ' + str(e))
                 break
 
+    def listen_istatd(self):
+        """
+        Listen over udp for MessagePack strings
+        """
+        while 1:
+            try:
+                # Set up the TCP listening socket
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind((self.ip, self.port))
+                s.setblocking(1)
+                s.listen(5)
+                logger.info('listening over tcp for istatd on %s' % self.port)
+
+                (conn, address) = s.accept()
+                logger.info('connection from %s:%s' % (address[0], self.port))
+
+                chunk = []
+                while 1:
+                    self.check_if_parent_is_alive()
+                    data, addr = s.recvfrom(1024)
+                    metric = data
+                    chunk.append(metric)
+
+                    # Queue the chunk and empty the variable
+                    if len(chunk) > settings.CHUNK_SIZE:
+                        try:
+                            self.q.put(list(chunk), block=False)
+                            chunk[:] = []
+
+                        # Drop chunk if queue is full
+                        except Full:
+                            logger.info('queue is full, dropping datapoints')
+                            chunk[:] = []
+
+            except Exception as e:
+                logger.info('can\'t connect to socket: ' + str(e))
+                break
+
     def run(self):
         """
         Called when process intializes.
@@ -152,5 +191,7 @@ class Listen(Process):
             self.listen_pickle()
         elif self.type == 'udp':
             self.listen_udp()
+        elif self.istatd == 'istatd':
+            self.listen_istatd()
         else:
             logging.error('unknown listener format')
