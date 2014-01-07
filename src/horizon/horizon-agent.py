@@ -76,7 +76,7 @@ if __name__ == "__main__":
     horizon = Horizon()
 
     logger = logging.getLogger("HorizonLog")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(settings.LOGGING_LEVEL)
     formatter = logging.Formatter("%(asctime)s :: %(process)s :: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     handler = logging.FileHandler(settings.LOG_PATH + '/horizon.log')
     handler.setFormatter(formatter)

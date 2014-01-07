@@ -87,7 +87,7 @@ class Worker(Process):
 
                 for metric in chunk:
 
-                    logger.info('Metric in worker {m}'.format(m=metric))
+                    logger.debug('Metric in worker {m}'.format(m=metric))
                     # Check if we should skip it
                     if self.in_skip_list(metric[0]):
                         continue

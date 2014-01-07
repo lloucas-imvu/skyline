@@ -152,24 +152,36 @@ class Listen(Process):
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind((self.ip, self.port))
-                s.setblocking(1)
+                s.setblocking(0)
                 s.listen(5)
-                logger.info('listening over tcp for istatd on %s' % self.port)
+                logger.debug('listening over tcp for istatd on %s' % self.port)
 
-                (conn, address) = s.accept()
-                logger.info('connection from %s:%s' % (address[0], self.port))
+                try:
+                    (conn, address) = s.accept()
+                    logger.debug('connection from %s:%s' % (address[0], self.port))
+                except socket.error as e:
+                    if e.errno == 11:
+                        s.close()
+                        continue
+                    raise
 
                 chunk = []
                 rem = ""
                 while 1:
                     self.check_if_parent_is_alive()
-                    logger.info('Looping for istatd data from connection')
-                    data = self.read_all(conn, 128)
-                    logger.info('data {data} received'.format(data=data))
+                    logger.debug('Looping for istatd data from connection')
+                    try:
+                        data = conn.recv(16)
+                        if not data:
+                            break
+                        logger.debug('data {data} received'.format(data=data))
+                    except socket.error as e:
+                        if e.errno == 11:
+                            continue
+                        raise
 
                     data2 = rem + data
                     rem = ""
-                    logger.info('data {data} received app'.format(data=data2))
 
                     met = data2.splitlines()
 
@@ -178,7 +190,7 @@ class Listen(Process):
                         mets = met[:-1]
                         rem = met[-1:][0]
 
-                    logger.info('met {met} received app'.format(met=mets))
+                    logger.debug('met {met} received app'.format(met=mets))
 
 
                     for m in mets:
@@ -191,7 +203,6 @@ class Listen(Process):
                     # Queue the chunk and empty the variable
                     if len(chunk) > settings.CHUNK_SIZE:
                         try:
-                            logger.info("Queueing gingini the chunks {chunk}".format(chunk=chunk))
                             self.q.put(list(chunk), block=False)
                             chunk[:] = []
 
