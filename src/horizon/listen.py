@@ -160,13 +160,24 @@ class Listen(Process):
                 logger.info('connection from %s:%s' % (address[0], self.port))
 
                 chunk = []
+                rem = ""
                 while 1:
                     self.check_if_parent_is_alive()
                     logger.info('Looping for istatd data from connection')
-                    data = self.read_all(conn, 1024)
+                    data = self.read_all(conn, 128)
+                    met = data.splitlines()
+
+                    met = rem + met
+                    rem = ""
+
+                    mets = met
+                    if not data.endswith('\n'):
+                        mets = met[:-1]
+                        rem = met[-1:]
+
                     logger.info('data {data} received'.format(data=data))
-                    metric = data
-                    chunk.append(metric)
+                    for m in mets:
+                        chunk.append(m)
 
                     # Queue the chunk and empty the variable
                     if len(chunk) > settings.CHUNK_SIZE:
