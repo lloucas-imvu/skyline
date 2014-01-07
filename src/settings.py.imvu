@@ -1,4 +1,4 @@
-import logger
+import logging
 """
 Shared settings
 """
@@ -8,7 +8,7 @@ REDIS_SOCKET_PATH = '/tmp/redis.sock'
 
 # The Skyline logs directory. Do not include a trailing slash.
 LOG_PATH = '/var/log/skyline'
-LOGGING_LEVEL = logger.INFO
+LOGGING_LEVEL = logging.INFO
 
 # The Skyline pids directory. Do not include a trailing slash.
 PID_PATH = '/var/run/skyline'
