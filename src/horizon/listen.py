@@ -165,17 +165,19 @@ class Listen(Process):
                     self.check_if_parent_is_alive()
                     logger.info('Looping for istatd data from connection')
                     data = self.read_all(conn, 128)
-                    met = data.splitlines()
+                    logger.info('data {data} received'.format(data=data))
 
-                    met = rem + met
+                    data2 = rem + data
                     rem = ""
+                    logger.info('data {data} received app'.format(data=data2))
+
+                    met = data2.splitlines()
 
                     mets = met
-                    if not data.endswith('\n'):
+                    if not data2.endswith('\n'):
                         mets = met[:-1]
-                        rem = met[-1:]
+                        rem = met[-1:][0]
 
-                    logger.info('data {data} received'.format(data=data))
                     for m in mets:
                         chunk.append(m)
 
