@@ -162,7 +162,9 @@ class Listen(Process):
                 chunk = []
                 while 1:
                     self.check_if_parent_is_alive()
-                    data, addr = s.recvfrom(1024)
+                    logger.info('Looping for istatd data from connection')
+                    data = self.read_all(conn, 1024)
+                    logger.info('data {data} received'.format(data=data))
                     metric = data
                     chunk.append(metric)
 
