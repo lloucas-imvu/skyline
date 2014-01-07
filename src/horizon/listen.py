@@ -178,12 +178,20 @@ class Listen(Process):
                         mets = met[:-1]
                         rem = met[-1:][0]
 
+                    logger.info('met {met} received app'.format(met=mets))
+
+
                     for m in mets:
-                        chunk.append(m)
+                        ##parse istatd counter.name timestamp sum sumSquared min max count 
+                        mm = m.split(' ')
+                        mmm = (mm[0], [int(mm[1]), float(mm[2]) / float(mm[6])])
+                        
+                        chunk.append(mmm)
 
                     # Queue the chunk and empty the variable
                     if len(chunk) > settings.CHUNK_SIZE:
                         try:
+                            logger.info("Queueing gingini the chunks {chunk}".format(chunk=chunk))
                             self.q.put(list(chunk), block=False)
                             chunk[:] = []
 
