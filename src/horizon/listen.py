@@ -1,4 +1,6 @@
 import socket
+import errno
+import time
 from os import kill, getpid
 from Queue import Full
 from multiprocessing import Process
@@ -154,16 +156,24 @@ class Listen(Process):
                 s.bind((self.ip, self.port))
                 s.setblocking(0)
                 s.listen(5)
-                logger.debug('listening over tcp for istatd on %s' % self.port)
+#                logger.debug('listening over tcp for istatd on %s' % self.port)
 
                 try:
+                    logger.debug('Attempting to accept')
                     (conn, address) = s.accept()
                     logger.debug('connection from %s:%s' % (address[0], self.port))
                 except socket.error as e:
-                    if e.errno == 11:
+                    if e.errno == errno.EWOULDBLOCK:
+			logger.debug('Stuck waiting :(')
                         s.close()
+                        s = None
+                        time.sleep(.1) 
                         continue
+                    logger.debug('Real error in accept {e}'.format(e=e))
                     raise
+                except Exception as e:
+                    logger.debug('Real2 error in accept {e}'.format(e=e))
+
 
                 chunk = []
                 rem = ""

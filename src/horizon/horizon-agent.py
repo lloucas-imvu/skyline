@@ -46,7 +46,10 @@ class Horizon():
         # Start the listeners
         Listen(settings.PICKLE_PORT, listen_queue, pid, type="pickle").start()
         Listen(settings.UDP_PORT, listen_queue, pid, type="udp").start()
-        Listen(settings.ISTATD_PORT, listen_queue, pid, type="istatd").start()
+        istatdP = lambda: Listen(settings.ISTATD_PORT, listen_queue, pid, type="istatd")
+
+        proc = istatdP()
+        proc.start()
 
         # Start the roomba
         Roomba(pid, skip_mini).start()
@@ -60,6 +63,10 @@ class Horizon():
         # Keep yourself occupied, sucka
         while 1:
             time.sleep(100)
+            if not proc.is_alive():
+                logger.warn('Warning: istatd process is dead')
+                proc = istatdP()
+                proc.start()
 
 if __name__ == "__main__":
     """
