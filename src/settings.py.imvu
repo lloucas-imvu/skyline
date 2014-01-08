@@ -34,7 +34,7 @@ MINI_DURATION = 3600
 
 # If you have a Graphite host set up, set this metric to get graphs on
 # Skyline and Horizon. Include http://.
-GRAPHITE_HOST = 'http://your_graphite_host.com'
+GRAPHITE_HOST = ''
 
 # If you have a Graphite host set up, set its Carbon port.
 CARBON_PORT = 2003
@@ -43,7 +43,7 @@ CARBON_PORT = 2003
 # webapp. Include http://. If you don't want to use Oculus, set this to an
 # empty string. If you comment this out, Skyline won't work! Speed improvements
 # will occur when Oculus support is disabled.
-OCULUS_HOST = 'http://your_oculus_host.com'
+OCULUS_HOST = ''
 
 """
 Analyzer settings
@@ -85,7 +85,7 @@ BOREDOM_SET_SIZE = 1
 
 # The canary metric should be a metric with a very high, reliable resolution
 # that you can use to gauge the status of the system as a whole.
-CANARY_METRIC = 'statsd.numStats'
+CANARY_METRIC = 'istatd.counter.enqueue'
 
 # These are the algorithms that the Analyzer will run. To add a new algorithm,
 # you must both define the algorithm in algorithms.py and add its name here.
@@ -103,14 +103,14 @@ ALGORITHMS = [
 
 # This is the number of algorithms that must return True before a metric is
 # classified as anomalous.
-CONSENSUS = 6
+CONSENSUS = 1
 
 # This is to enable second order anomalies. This is an experimental feature, so
 # it's turned off by default.
 ENABLE_SECOND_ORDER = False
 
 # This enables alerting.
-ENABLE_ALERTS = True
+ENABLE_ALERTS = False
 
 # This is the config for which metrics to alert on and which strategy to use for each.
 # Alerts will not fire twice within EXPIRATION_TIME, even if they trigger again.
@@ -165,7 +165,7 @@ Horizon settings
 WORKER_PROCESSES = 2
 
 # The IP address for Horizon to listen on.  Defaults to gethostname()
-# HORIZON_IP = '0.0.0.0'
+HORIZON_IP = '0.0.0.0'
 
 # This is the port that listens for Graphite pickles over TCP, sent by Graphite's
 # carbon-relay agent.
