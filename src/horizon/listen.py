@@ -148,15 +148,16 @@ class Listen(Process):
         """
         Listen over udp for MessagePack strings
         """
+        logger.info("Starting an istad listener")
         while 1:
             try:
                 # Set up the TCP listening socket
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind((self.ip, self.port))
-                s.setblocking(0)
+                s.setblocking(1)
                 s.listen(5)
-#                logger.debug('listening over tcp for istatd on %s' % self.port)
+                logger.debug('listening over tcp for istatd on %s %s' % (self.ip, self.port))
 
                 try:
                     logger.debug('Attempting to accept')
@@ -180,6 +181,7 @@ class Listen(Process):
                 while 1:
                     self.check_if_parent_is_alive()
                     logger.debug('Looping for istatd data from connection')
+                    logger.debug('Chunk at top {c}'.format(c=chunk))
                     try:
                         data = conn.recv(16)
                         if not data:
@@ -188,6 +190,7 @@ class Listen(Process):
                     except socket.error as e:
                         if e.errno == 11:
                             continue
+                        logger.debug('Crash {e}'.format(e=e))
                         raise
 
                     data2 = rem + data
@@ -210,9 +213,12 @@ class Listen(Process):
                         
                         chunk.append(mmm)
 
+
+		    logger.debug("Chunks {c}".format(c=chunk))
                     # Queue the chunk and empty the variable
                     if len(chunk) > settings.CHUNK_SIZE:
                         try:
+                            logger.debug("Queueing the chunks {c}".format(c=chunk))
                             self.q.put(list(chunk), block=False)
                             chunk[:] = []
 
