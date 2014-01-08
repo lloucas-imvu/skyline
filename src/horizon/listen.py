@@ -211,15 +211,21 @@ class Listen(Process):
                     for m in filter(lambda x: not x.startswith('#'), mets):
                         ##parse istatd counter.name timestamp sum sumSquared min max count 
                         mm = m.split(' ')
+                        div = mm[0].startswith('*')
                         if len(mm) == 7:
-	                        mmm = (mm[0], [int(mm[1]), float(mm[2]) / float(mm[6])])
+                            val = float(mm[2]) / float(mm[6])
+                            val = val / 10 if div else val
+                            mmm = (mm[0], [int(mm[1]), val])
                         elif len(mm) == 3:
-                            mmm = (mm[0], [int(mm[1]), float(mm[2])])
+                            val = float(mm[2])
+                            val = val / 10 if div else val
+                            mmm = (mm[0], [int(mm[1]), val])
                         elif len(mm) == 2:
-                            mmm = (mm[0], [int(time.time()), float(mm[1])])
+                            val = float(mm[1])
+                            val = val / 10 if div else val
+                            mmm = (mm[0], [int(time.time()), val])
                         else:
-                            continue
-                        
+                            continue 
                         chunk.append(mmm)
 
 
