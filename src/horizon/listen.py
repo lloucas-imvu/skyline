@@ -1,6 +1,7 @@
 import socket
 import errno
 import time
+import traceback
 from os import kill, getpid
 from Queue import Full
 from multiprocessing import Process
@@ -141,7 +142,7 @@ class Listen(Process):
                             chunk[:] = []
 
             except Exception as e:
-                logger.info('can\'t connect to socket: ' + str(e))
+                logger.info('can\'t connect to udp socket: ' + str(e))
                 break
 
     def listen_istatd(self):
@@ -154,6 +155,7 @@ class Listen(Process):
                 # Set up the TCP listening socket
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                logger.debug("ip {i} port {p}".format(i=self.ip, p=self.port))
                 s.bind((self.ip, self.port))
                 s.setblocking(1)
                 s.listen(5)
@@ -165,7 +167,7 @@ class Listen(Process):
                     logger.debug('connection from %s:%s' % (address[0], self.port))
                 except socket.error as e:
                     if e.errno == errno.EWOULDBLOCK:
-			logger.debug('Stuck waiting :(')
+                        logger.debug('Stuck waiting :(')
                         s.close()
                         s = None
                         time.sleep(.1) 
@@ -206,15 +208,22 @@ class Listen(Process):
                     logger.debug('met {met} received app'.format(met=mets))
 
 
-                    for m in mets:
+                    for m in filter(lambda x: not x.startswith('#'), mets):
                         ##parse istatd counter.name timestamp sum sumSquared min max count 
                         mm = m.split(' ')
-                        mmm = (mm[0], [int(mm[1]), float(mm[2]) / float(mm[6])])
+                        if len(mm) == 7:
+	                        mmm = (mm[0], [int(mm[1]), float(mm[2]) / float(mm[6])])
+                        elif len(mm) == 3:
+                            mmm = (mm[0], [int(mm[1]), float(mm[2])])
+                        elif len(mm) == 2:
+                            mmm = (mm[0], [int(time.time()), float(mm[1])])
+                        else:
+                            continue
                         
                         chunk.append(mmm)
 
 
-		    logger.debug("Chunks {c}".format(c=chunk))
+                    logger.debug("Chunks {c}".format(c=chunk))
                     # Queue the chunk and empty the variable
                     if len(chunk) > settings.CHUNK_SIZE:
                         try:
@@ -228,7 +237,8 @@ class Listen(Process):
                             chunk[:] = []
 
             except Exception as e:
-                logger.info('can\'t connect to socket: ' + str(e))
+                logger.info('can\'t connect to istatd tcp socket: ' + str(e))
+                logger.debug(traceback.format_exc())
                 break
 
     def run(self):
