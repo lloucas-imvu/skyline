@@ -1,4 +1,4 @@
-var GRAPHITE_HOST,
+var ISTATD_GRAPH_VIEW_HOST,
     OCULUS_HOST,
     FULL_NAMESPACE,
     mini_graph,
@@ -17,7 +17,10 @@ var handle_data = function(data) {
     for (i in data) {
         metric = data[i];
         name = metric[1]
-        var src = GRAPHITE_HOST + '/render/?width=1400&from=-1hour&target=' + name;
+        var now = new Date();
+	var hour = new Date();
+        hour.setHours(now.getHours() - 1);
+        var src = ISTATD_GRAPH_VIEW_HOST + '#?0=' + name + '&graphs=0%2C3&from=' + Math.floor((hour.getTime() / 1000)) + '&to=' + Math.floor((now.getTime() / 1000)) + '&state=';
         // Add a space after the metric name to make each unique
         to_append = "<div class='sub'><a target='_blank' href='" + src + "'><div class='name'>" + name + " </div></a>&nbsp;&nbsp;"
         if (OCULUS_HOST != ''){
@@ -150,7 +153,7 @@ $(function(){
         // Get the variables from settings.py
         data = JSON.parse(data);
         FULL_NAMESPACE = data['FULL_NAMESPACE'];
-        GRAPHITE_HOST = data['GRAPHITE_HOST'];
+        ISTATD_GRAPH_VIEW_HOST = data['ISTATD_GRAPH_VIEW_HOST'];
         OCULUS_HOST = data['OCULUS_HOST'];
 
         // Get initial data after getting the host variables
