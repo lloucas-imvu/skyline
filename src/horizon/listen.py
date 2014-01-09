@@ -185,7 +185,7 @@ class Listen(Process):
                     logger.debug('Looping for istatd data from connection')
                     logger.debug('Chunk at top {c}'.format(c=chunk))
                     try:
-                        data = conn.recv(1024)
+                        data = conn.recv(4096)
                         if not data:
                             break
                         logger.debug('data {data} received'.format(data=data))
