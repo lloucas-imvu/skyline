@@ -40,7 +40,7 @@ def data():
     try:
         raw_series = REDIS_CONN.get(metric)
         if not raw_series:
-            resp = json.dumps({'results': 'Error: No metric by that name'})
+            resp = json.dumps({'results': 'Error: No metric by that name {metric}'.format(metric=metric)})
             return resp, 404
         else:
             unpacker = Unpacker(use_list = False)

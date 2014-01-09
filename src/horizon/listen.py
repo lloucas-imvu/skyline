@@ -149,7 +149,7 @@ class Listen(Process):
         """
         Listen over udp for MessagePack strings
         """
-        logger.info("Starting an istad listener")
+        logger.info("Starting an istatd listener")
         while 1:
             try:
                 # Set up the TCP listening socket
@@ -185,7 +185,7 @@ class Listen(Process):
                     logger.debug('Looping for istatd data from connection')
                     logger.debug('Chunk at top {c}'.format(c=chunk))
                     try:
-                        data = conn.recv(16)
+                        data = conn.recv(1024)
                         if not data:
                             break
                         logger.debug('data {data} received'.format(data=data))
