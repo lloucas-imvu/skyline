@@ -18,7 +18,7 @@ var handle_data = function(data) {
         metric = data[i];
         name = metric[1]
         var now = new Date();
-	var hour = new Date();
+        var hour = new Date();
         hour.setHours(now.getHours() - 1);
         var src = ISTATD_GRAPH_VIEW_HOST + '#?0=' + name + '&graphs=0%2C3&from=' + Math.floor((hour.getTime() / 1000)) + '&to=' + Math.floor((now.getTime() / 1000)) + '&state=';
         // Add a space after the metric name to make each unique
