@@ -55,6 +55,17 @@ class Worker(Process):
 
         return False
 
+    def send_istatd_metric(self, name, value):
+        if settings.ISTATD_AGENT_HOST != '':
+            sock = socket.socket()
+            sock.connect((settings.ISTATD_AGENT_HOST, settings.ISTATD_AGENT_PORT))
+            sock.sendall('{counter}{suffix} {time} {value}\n'.format(counter=name, suffix=settings.ISTATD_SUFFIX, time=int(time()), value=value))
+            sock.close()
+            return True
+
+        return False
+
+
     def run(self):
         """
         Called when the process intializes.
@@ -113,6 +124,8 @@ class Worker(Process):
                 if self.canary:
                     logger.info('queue size at %d' % self.q.qsize())
                     self.send_graphite_metric('skyline.horizon.queue_size', self.q.qsize())
+
+                    self.send_istatd_metric('skyline.horizon.queue_size', self.q.qsize())
 
             except Empty:
                 logger.info('worker queue is empty and timed out')

@@ -1,4 +1,5 @@
 import logging
+import socket
 """
 Shared settings
 """
@@ -36,6 +37,12 @@ MINI_DURATION = 3600
 # Skyline and Horizon. Include http://.
 GRAPHITE_HOST = ''
 
+ISTATD_GRAPH_VIEW_HOST = 'https://istatd.imvu.com'
+
+ISTATD_AGENT_HOST = 'localhost'
+ISTATD_AGENT_PORT = 8111
+ISTATD_SUFFIX = '^host.{host}^role.skyline'.format(host=socket.gethostname())
+
 # If you have a Graphite host set up, set its Carbon port.
 CARBON_PORT = 2003
 
@@ -58,7 +65,7 @@ ANOMALY_DUMP = 'webapp/static/dump/anomalies.json'
 # if you set ANALYZER_PROCESSES to several less than the total number of
 # CPUs on your box. Be sure to leave some CPU room for the Horizon workers,
 # and for Redis.
-ANALYZER_PROCESSES = 14
+ANALYZER_PROCESSES = 13
 
 # This is the duration, in seconds, for a metric to become 'stale' and for
 # the analyzer to ignore it until new datapoints are added. 'Staleness' means
@@ -85,7 +92,7 @@ BOREDOM_SET_SIZE = 1
 
 # The canary metric should be a metric with a very high, reliable resolution
 # that you can use to gauge the status of the system as a whole.
-CANARY_METRIC = 'istatd.counter.enqueue'
+CANARY_METRIC = 'cpu.0.idle.role.istatd'
 
 # These are the algorithms that the Analyzer will run. To add a new algorithm,
 # you must both define the algorithm in algorithms.py and add its name here.
@@ -162,7 +169,7 @@ Horizon settings
 """
 # This is the number of worker processes that will consume from the Horizon
 # queue.
-WORKER_PROCESSES = 9
+WORKER_PROCESSES = 10
 
 # The IP address for Horizon to listen on.  Defaults to gethostname()
 HORIZON_IP = '0.0.0.0'
@@ -187,7 +194,7 @@ CHUNK_SIZE = 200
 # means that the workers do not have enough CPU alotted in order to process the
 # queue on time. Try increasing CHUNK_SIZE, decreasing ANALYZER_PROCESSES, or
 # decreasing ROOMBA_PROCESSES.
-MAX_QUEUE_SIZE = 500
+MAX_QUEUE_SIZE = 1000
 
 # This is the number of Roomba processes that will be spawned to trim
 # timeseries in order to keep them at FULL_DURATION. Keep this number small,
@@ -213,6 +220,17 @@ MAX_RESOLUTION = 1000
 SKIP_LIST = [
     'example.statsd.metric',
     'another.example.metric',
+    'dataservices.',
+    '*network.',
+    'network.',
+    'dns.stats.',
+    'entropy.',
+    'net.sockstat.',
+    'paris.',
+    'snmp.',
+    'users.',
+    'solr.search.',
+    'mysql.',
     # if you use statsd, these can result in many near-equal series
     #'_90',
     #'.lower',

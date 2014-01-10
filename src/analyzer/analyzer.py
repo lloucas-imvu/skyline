@@ -54,6 +54,16 @@ class Analyzer(Thread):
 
         return False
 
+    def send_istatd_metric(self, name, value):
+        if settings.ISTATD_AGENT_HOST != '':
+            sock = socket.socket()
+            sock.connect((settings.ISTATD_AGENT_HOST, settings.ISTATD_AGENT_PORT))
+            sock.sendall('{counter}{suffix} {time} {value}\n'.format(counter=name, suffix=settings.ISTATD_SUFFIX, time=int(time()), value=value))
+            sock.close()
+            return True
+
+        return False
+
     def spin_process(self, i, unique_metrics):
         """
         Assign a bunch of metrics for a process to analyze.
@@ -222,6 +232,9 @@ class Analyzer(Thread):
             self.send_graphite_metric('skyline.analyzer.run_time', '%.2f' % (time() - now))
             self.send_graphite_metric('skyline.analyzer.total_analyzed', '%.2f' % (len(unique_metrics) - sum(exceptions.values())))
 
+            self.send_istatd_metric('skyline.analyzer.run_time', '%.2f' % (time() - now))
+            self.send_istatd_metric('skyline.analyzer.total_analyzed', '%.2f' % (len(unique_metrics) - sum(exceptions.values())))
+
             # Check canary metric
             raw_series = self.redis_conn.get(settings.FULL_NAMESPACE + settings.CANARY_METRIC)
             if raw_series is not None:
@@ -234,6 +247,9 @@ class Analyzer(Thread):
                 logger.info('canary duration   :: %.2f' % time_human)
                 self.send_graphite_metric('skyline.analyzer.duration', '%.2f' % time_human)
                 self.send_graphite_metric('skyline.analyzer.projected', '%.2f' % projected)
+
+                self.send_istatd_metric('skyline.analyzer.duration', '%.2f' % time_human)
+                self.send_istatd_metric('skyline.analyzer.projected', '%.2f' % projected)
 
             # Reset counters
             self.anomalous_metrics[:] = []
