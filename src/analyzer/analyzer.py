@@ -238,18 +238,22 @@ class Analyzer(Thread):
             # Check canary metric
             raw_series = self.redis_conn.get(settings.FULL_NAMESPACE + settings.CANARY_METRIC)
             if raw_series is not None:
-                unpacker = Unpacker(use_list = False)
-                unpacker.feed(raw_series)
-                timeseries = list(unpacker)
-                time_human = (timeseries[-1][0] - timeseries[0][0]) / 3600
-                projected = 24 * (time() - now) / time_human
+                try:
+                    unpacker = Unpacker(use_list = False)
+                    unpacker.feed(raw_series)
+                    timeseries = list(unpacker)
+                    time_human = (timeseries[-1][0] - timeseries[0][0]) / 3600
+                    projected = 24 * (time() - now) / time_human
 
-                logger.info('canary duration   :: %.2f' % time_human)
-                self.send_graphite_metric('skyline.analyzer.duration', '%.2f' % time_human)
-                self.send_graphite_metric('skyline.analyzer.projected', '%.2f' % projected)
+                    logger.info('canary duration   :: %.2f' % time_human)
+                    self.send_graphite_metric('skyline.analyzer.duration', '%.2f' % time_human)
+                    self.send_graphite_metric('skyline.analyzer.projected', '%.2f' % projected)
 
-                self.send_istatd_metric('skyline.analyzer.duration', '%.2f' % time_human)
-                self.send_istatd_metric('skyline.analyzer.projected', '%.2f' % projected)
+                    self.send_istatd_metric('skyline.analyzer.duration', '%.2f' % time_human)
+                    self.send_istatd_metric('skyline.analyzer.projected', '%.2f' % projected)
+                except Exception as e:
+                    logger.info("Failed to canary {error}".format(error=e))
+                    logger.debug(traceback.format_exc())
 
             # Reset counters
             self.anomalous_metrics[:] = []
