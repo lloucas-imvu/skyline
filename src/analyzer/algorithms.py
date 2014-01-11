@@ -295,7 +295,6 @@ def run_selected_algorithm(timeseries, metric_name):
             else:
                 return True, ensemble, timeseries[-1][1]
 
-        logger.debug("count was {ensemble}".format(ensemble=ensemble.count(False)))
         return False, ensemble, timeseries[-1][1]
     except:
         logging.error("Algorithm error: " + traceback.format_exc())
