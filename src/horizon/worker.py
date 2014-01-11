@@ -41,6 +41,9 @@ class Worker(Process):
         """
         for to_skip in settings.SKIP_LIST:
             if to_skip in metric_name:
+                for white_listed in settings.WHITE_LIST:
+                    if white in metric_name:
+                        return False
                 return True
 
         return False

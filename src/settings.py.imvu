@@ -231,6 +231,8 @@ SKIP_LIST = [
     'users.',
     'solr.search.',
     'mysql.',
+    '*interface.',
+    'interface.',
     # if you use statsd, these can result in many near-equal series
     #'_90',
     #'.lower',
@@ -240,6 +242,13 @@ SKIP_LIST = [
     #'.sum',
 ]
 
+WHITE_LIST = [
+    '.tep_die',
+    '.website.error',
+    '.tep_error_log',
+    '.if_octets.',
+    'mysql.status.',
+]
 
 """
 Webapp settings
