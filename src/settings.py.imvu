@@ -233,6 +233,12 @@ SKIP_LIST = [
     'mysql.',
     '*interface.',
     'interface.',
+    'load.5min.',
+    'load.15min.',
+    'kmem.',
+    'response-time.95th.host.',
+    'response-time.90th.host.',
+    'response-time.99th.host.',
     # if you use statsd, these can result in many near-equal series
     #'_90',
     #'.lower',
@@ -247,7 +253,7 @@ WHITE_LIST = [
     '.website.error',
     '.tep_error_log',
     '.if_octets.',
-    'mysql.status.',
+    'mysql.status.connections',
 ]
 
 """
