@@ -7,6 +7,7 @@ from time import time, sleep
 
 import logging
 import socket
+import re
 import settings
 
 logger = logging.getLogger("HorizonLog")
@@ -25,6 +26,7 @@ class Worker(Process):
         self.daemon = True
         self.canary = canary
         self.skip_mini = skip_mini
+        self.regex_filter_cache = [re.compile(x) for x in settings.FILTER_BLACKLIST]
 
     def check_if_parent_is_alive(self):
         """
@@ -34,6 +36,18 @@ class Worker(Process):
             kill(self.parent_pid, 0)
         except:
             exit(0)
+
+    def check_disallowed(self, metric_name):
+        if settings.USE_REGEX_FILTER:
+            return self.in_regex_filter(metric_name)
+        else:
+            return self.in_skip_list(metric[0])
+
+    def in_regex_filter(self, metric_name):
+        for filter in self.regex_filter_cache:
+            if filter.match(metric_name):
+                return True
+        return False
 
     def in_skip_list(self, metric_name):
         """
@@ -103,7 +117,7 @@ class Worker(Process):
 
                     logger.debug('Metric in worker {m}'.format(m=metric))
                     # Check if we should skip it
-                    if self.in_skip_list(metric[0]):
+                    if self.check_disallowed(metric[0]):
                         continue
 
                     # Bad data coming in

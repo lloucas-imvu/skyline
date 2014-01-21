@@ -256,6 +256,16 @@ WHITE_LIST = [
     'mysql.status.connections',
 ]
 
+USE_REGEX_FILTER = True
+FILTER_BLACKLIST = [
+    '^(?:[*]?apache|[*]?disk).+host',
+    '^(?:{res})'.format(res="|".join(['dataservices', '[*]?network', 'dns.stats', 'entropy', 'fail2ban', 'file_descriptors', 'net.sockstat', 'paris', 'processes', 'saved', 'snmp', '[*]?swap', 'sysctl.ipv4', 'users', 'tcp', 'solr.search', '[*]?interface[.](?!eth0)', 'load.(?:5|15)min', 'kmem',])),
+    '^cpu[.]0[.](?!idle)',
+    '^(?:mysql[.]status)[.](?!connections)',
+    '^(?:redis_info[.]gauge)',
+    '^(?:memcached)[.](?!memcached_connections[.]current)'
+]
+
 """
 Webapp settings
 """
