@@ -257,13 +257,14 @@ WHITE_LIST = [
 ]
 
 USE_REGEX_FILTER = True
+# it is a good idea to start the block with ^(?:[*]?      This matches the start of the line, doesnt capture, and makes sure to catch istatd's * for counter possibility
 FILTER_BLACKLIST = [
-    '^(?:[*]?apache|[*]?disk).+host',
-    '^(?:{res})'.format(res="|".join(['dataservices', '[*]?network', 'dns.stats', 'entropy', 'fail2ban', 'file_descriptors', 'net.sockstat', 'paris', 'processes', 'saved', 'snmp', '[*]?swap', 'sysctl.ipv4', 'users', 'tcp', 'solr.search', '[*]?interface[.](?!eth0)', 'load.(?:5|15)min', 'kmem',])),
-    '^cpu[.]0[.](?!idle)',
-    '^(?:mysql[.]status)[.](?!connections)',
-    '^(?:redis_info[.]gauge)',
-    '^(?:memcached)[.](?!memcached_connections[.]current)'
+    '^(?:[*]?apache|[*]?disk|[*]?memory).+host', #these counters are noisy at the host level
+    '^(?:{res})'.format(res="|".join(['dataservices', '[*]?network', 'dns.stats', 'entropy', 'fail2ban', 'file_descriptors', 'net.sockstat', 'paris', 'processes', 'saved', 'snmp', '[*]?swap', 'sysctl.ipv4', 'users', 'tcp', 'solr.search', '[*]?interface[.](?!eth0)', 'load.(?:5|15)min', 'kmem',])), #these are top level blocks (not application level so we currently dont care)
+    '^[*]?cpu[.]0[.](?!idle)', # repetetive data
+    '^(?:[*]?mysql)[.](?!status[.]connections)', #only look at connections
+    '^(?:[*]?redis_info[.](?:gauge|counter))', #only look at memory pressure
+    '^(?:[*]?memcached)[.](?!memcached_connections[.]current)' #only look at current connections
 ]
 
 """
