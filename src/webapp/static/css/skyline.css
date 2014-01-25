@@ -276,3 +276,24 @@ a:hover {
 //    width: 15px;
 //    text-overflow: ellipsis;
 //}
+
+.tiny_graph_container {
+    height: 60px;
+    width: 100%;
+    margin-bottom: 90px;
+    margin-top: 15px;
+    border-radius: 4px;
+}
+
+.tiny_graph {
+    height: 50px;
+    width: 100%;
+    margin-bottom: 15px;
+    margin-top: 5px;
+    padding-bottom: 7px;
+    padding-right: 5px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #DDD;
+}
+
