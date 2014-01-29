@@ -9,10 +9,23 @@ var ISTATD_GRAPH_VIEW_HOST,
 var mini_data = [];
 var big_data = [];
 var initial = true;
+var graphing_data;
 
 // This function call is hardcoded as JSONP in the anomalies.json file
 var handle_data = function(data) {
     $('#metrics_listings').empty();
+
+    var query = "";
+    var args = [];
+    for (i in data) {
+        var in_name = data[i][1];
+        args.push(FULL_NAMESPACE + "" + in_name);
+    }
+    query = args.join();
+
+    $.get("/api/m?metric=" + query, function(d){
+        graphing_data = JSON.parse(d);
+    };
 
     for (i in data) {
         metric = data[i];
@@ -28,63 +41,61 @@ var handle_data = function(data) {
         }
 
         to_append += "<div class='tiny_graph_container' id='graph_" + name + "_container'>";
-	to_append += "<div id='graph_" + name + "_label'></div>";
-	to_append += "<div class='tiny_graph' id='graph_" + name + "'></div>";
-	to_append += "</div>";
+        to_append += "<div id='graph_" + name + "_label'></div>";
+        to_append += "<div class='tiny_graph' id='graph_" + name + "'></div>";
+        to_append += "</div>";
 
         to_append += "<div class='count'>" + parseInt(metric[0]) + "</div>";
         $('#metrics_listings').append(to_append);
 
 
 
-        $.get("/api?metric=" + FULL_NAMESPACE + "" + name, function(myname){
-		return function(d){
-            var tiny_data = JSON.parse(d)['results'];
-            var v_offset = (new Date().getTime() / 1000) - 3600;
-            var very_mini_data = tiny_data.filter(function (value) {
-            return value[0] > v_offset;
-            });
-		var tiny_mini_graph = new Dygraph(document.getElementById("graph_" + myname), very_mini_data, {
-		    labels: [ 'Date', '' ], //hack to make the label / y axis prettier
-		    labelsDiv: document.getElementById('graph' +myname+ '_label'),
-		    xAxisLabelWidth: 60,
-		    yAxisLabelWidth: 35,
-		    axisLabelFontSize: 10,
-		    rollPeriod: 1,
-		    drawXGrid: false,
-		    drawYGrid: false,
-		    interactionModel: {},
-		    pixelsPerLabel: 20,
-		    drawXAxis: false,
-		    drawAxesatZero: false,
-		    underlayCallback: function(canvas, area, g) {
-			line = g.toDomYCoord(anomalous_datapoint);
-			canvas.beginPath();
-			canvas.moveTo(0, line);
-			canvas.lineTo(canvas.canvas.width, line);
-			canvas.lineWidth = 1;
-			canvas.strokeStyle = '#ff0000';
-			canvas.stroke();
-		    },
-		    axes : {
-			x: {
-			    valueFormatter: function(ms) {
-			    return new Date(ms * 1000).strftime('%m/%d %H:%M') + ' ';
-			    },
-			},
-			y : {
-			    axisLineColor: 'white'
-			},
-			'' : {
-			    axisLineColor: 'white',
-			    axisLabelFormatter: function(x) {
-				return Math.round(x);
-			    }
-			}
-		    },
-		});
-            tiny_mini_graph.updateOptions( { 'file': very_mini_data } );
-        }}(name)); 
+        var tiny_data = graphing_data[name]['results'];
+        var v_offset = (new Date().getTime() / 1000) - 3600;
+        var very_mini_data = tiny_data.filter(function (value) {
+        return value[0] > v_offset;
+        });
+        var tiny_mini_graph = new Dygraph(document.getElementById("graph_" + name), very_mini_data, {
+            labels: [ 'Date', '' ], //hack to make the label / y axis prettier
+            labelsDiv: document.getElementById('graph' +name+ '_label'),
+            xAxisLabelWidth: 60,
+            yAxisLabelWidth: 35,
+            axisLabelFontSize: 10,
+            rollPeriod: 1,
+            drawXGrid: false,
+            drawYGrid: false,
+            interactionModel: {},
+            pixelsPerLabel: 20,
+            drawXAxis: false,
+            drawAxesatZero: false,
+            underlayCallback: function(canvas, area, g) {
+            line = g.toDomYCoord(anomalous_datapoint);
+            canvas.beginPath();
+            canvas.moveTo(0, line);
+            canvas.lineTo(canvas.canvas.width, line);
+            canvas.lineWidth = 1;
+            canvas.strokeStyle = '#ff0000';
+            canvas.stroke();
+            },
+            axes : {
+            x: {
+                valueFormatter: function(ms) {
+                return new Date(ms * 1000).strftime('%m/%d %H:%M') + ' ';
+                },
+            },
+            y : {
+                axisLineColor: 'white'
+            },
+            '' : {
+                axisLineColor: 'white',
+                axisLabelFormatter: function(x) {
+                return Math.round(x);
+                }
+            }
+            },
+        });
+        tiny_mini_graph.updateOptions( { 'file': very_mini_data } );
+         
     }
 
     if (initial) {
