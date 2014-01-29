@@ -109,7 +109,7 @@ var handle_data = function(data) {
                 tiny_mini_graph.updateOptions( { 'file': very_mini_data } );
             }
         };
-    }(name_map);
+    }(name_map));
 
     handle_interaction();
 }
