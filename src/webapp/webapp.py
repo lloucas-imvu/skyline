@@ -53,28 +53,6 @@ def data():
         resp = json.dumps({'results': error})
         return resp, 500
 
-@app.route("/api/m", methods=['GET'])
-def data():
-    metric = request.args.get('metric', None)
-    try:
-        metrics = string.split(metric, ",")
-        responses = {}
-        for m in metrics:
-            raw_series = REDIS_CONN.get(m)
-            if not raw_series:
-                resp = json.dumps({'results': 'Error: No metric by that name {metric}'.format(metric=metric)})
-                return resp, 404
-            else:
-                unpacker = Unpacker(use_list = False)
-                unpacker.feed(raw_series)
-                timeseries = [item[:2] for item in unpacker]
-                resp = {'results': timeseries}
-                responses[m] = resp
-        return json.dumps(responses), 200
-    except Exception as e:
-        error = "Error: " + e
-        resp = json.dumps({'results': error})
-        return resp, 500
 
 class App():
     def __init__(self):
