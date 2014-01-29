@@ -14,6 +14,9 @@ var initial = true;
 var handle_data = function(data) {
     $('#metrics_listings').empty();
 
+    var query = "";
+    var args = [];
+    var name_map = {};
     for (i in data) {
         metric = data[i];
         name = metric[1]
@@ -35,6 +38,9 @@ var handle_data = function(data) {
         to_append += "<div class='count'>" + parseInt(metric[0]) + "</div>";
         $('#metrics_listings').append(to_append);
 
+        var full_name = FULL_NAMESPACE + "" + name;
+        args.push(full_name);
+        name_map[full_name] = { name: name, data_point: parseInt(metric[0]) };
 
 
     }
@@ -44,14 +50,7 @@ var handle_data = function(data) {
         initial = false;
     }
 
-    var query = "";
-    var args = [];
-    var name_map = {};
     for (i in data) {
-        var in_name = data[i][1];
-        var full_name = FULL_NAMESPACE + "" + in_name;
-        args.push(full_name);
-        name_map[full_name] = in_name;
     }
     query = args.join();
 
@@ -59,7 +58,8 @@ var handle_data = function(data) {
         return function(d){
             graphing_data = JSON.parse(d);
             for (key in graphing_data) {
-                var myname = name_mapping[key];
+                var myname = name_mapping[key]['name'];
+                var bad_data_point = name_mapping[key]['data_point'];
                 var value = graphing_data[key];
 
                 var tiny_data = value['results'];
@@ -81,7 +81,7 @@ var handle_data = function(data) {
                     drawXAxis: false,
                     drawAxesatZero: false,
                     underlayCallback: function(canvas, area, g) {
-                    line = g.toDomYCoord(anomalous_datapoint);
+                    line = g.toDomYCoord(bad_data_point);
                     canvas.beginPath();
                     canvas.moveTo(0, line);
                     canvas.lineTo(canvas.canvas.width, line);
