@@ -37,60 +37,79 @@ var handle_data = function(data) {
 
 
 
-        $.get("/api?metric=" + FULL_NAMESPACE + "" + name, function(myname){
-		return function(d){
-            var tiny_data = JSON.parse(d)['results'];
-            var v_offset = (new Date().getTime() / 1000) - 3600;
-            var very_mini_data = tiny_data.filter(function (value) {
-            return value[0] > v_offset;
-            });
-		var tiny_mini_graph = new Dygraph(document.getElementById("graph_" + myname), very_mini_data, {
-		    labels: [ 'Date', '' ], //hack to make the label / y axis prettier
-		    labelsDiv: document.getElementById('graph' +myname+ '_label'),
-		    xAxisLabelWidth: 60,
-		    yAxisLabelWidth: 35,
-		    axisLabelFontSize: 10,
-		    rollPeriod: 1,
-		    drawXGrid: false,
-		    drawYGrid: false,
-		    interactionModel: {},
-		    pixelsPerLabel: 20,
-		    drawXAxis: false,
-		    drawAxesatZero: false,
-		    underlayCallback: function(canvas, area, g) {
-			line = g.toDomYCoord(anomalous_datapoint);
-			canvas.beginPath();
-			canvas.moveTo(0, line);
-			canvas.lineTo(canvas.canvas.width, line);
-			canvas.lineWidth = 1;
-			canvas.strokeStyle = '#ff0000';
-			canvas.stroke();
-		    },
-		    axes : {
-			x: {
-			    valueFormatter: function(ms) {
-			    return new Date(ms * 1000).strftime('%m/%d %H:%M') + ' ';
-			    },
-			},
-			y : {
-			    axisLineColor: 'white'
-			},
-			'' : {
-			    axisLineColor: 'white',
-			    axisLabelFormatter: function(x) {
-				return Math.round(x);
-			    }
-			}
-		    },
-		});
-            tiny_mini_graph.updateOptions( { 'file': very_mini_data } );
-        }}(name)); 
     }
 
     if (initial) {
         selected = data[0][1];
         initial = false;
     }
+
+    var query = "";
+    var args = [];
+    var name_map = {};
+    for (i in data) {
+        var in_name = data[i][1];
+        var full_name = FULL_NAMESPACE + "" + in_name;
+        args.push(full_name);
+        name_map[full_name] = in_name;
+    }
+    query = args.join();
+
+    $.get("/api/m?metric=" + query, function(name_mapping) {
+        return function(d){
+            graphing_data = JSON.parse(d);
+            for (key in graphing_data) {
+                var myname = name_mapping[key];
+                var value = graphing_data[key];
+
+                var tiny_data = value['results'];
+                var v_offset = (new Date().getTime() / 1000) - 3600;
+                var very_mini_data = tiny_data.filter(function (value) {
+                    return value[0] > v_offset;
+                });
+                var tiny_mini_graph = new Dygraph(document.getElementById("graph_" + myname), very_mini_data, {
+                    labels: [ 'Date', '' ], //hack to make the label / y axis prettier
+                    labelsDiv: document.getElementById('graph' +myname+ '_label'),
+                    xAxisLabelWidth: 60,
+                    yAxisLabelWidth: 35,
+                    axisLabelFontSize: 10,
+                    rollPeriod: 1,
+                    drawXGrid: false,
+                    drawYGrid: false,
+                    interactionModel: {},
+                    pixelsPerLabel: 20,
+                    drawXAxis: false,
+                    drawAxesatZero: false,
+                    underlayCallback: function(canvas, area, g) {
+                    line = g.toDomYCoord(anomalous_datapoint);
+                    canvas.beginPath();
+                    canvas.moveTo(0, line);
+                    canvas.lineTo(canvas.canvas.width, line);
+                    canvas.lineWidth = 1;
+                    canvas.strokeStyle = '#ff0000';
+                    canvas.stroke();
+                    },
+                    axes : {
+                    x: {
+                        valueFormatter: function(ms) {
+                        return new Date(ms * 1000).strftime('%m/%d %H:%M') + ' ';
+                        },
+                    },
+                    y : {
+                        axisLineColor: 'white'
+                    },
+                    '' : {
+                        axisLineColor: 'white',
+                        axisLabelFormatter: function(x) {
+                        return Math.round(x);
+                        }
+                    }
+                    },
+                });
+                tiny_mini_graph.updateOptions( { 'file': very_mini_data } );
+            }
+        };
+    }(name_map);
 
     handle_interaction();
 }
